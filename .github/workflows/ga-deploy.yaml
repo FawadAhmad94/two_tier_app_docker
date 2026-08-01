@@ -1,1 +1,52 @@
-
+name: Employee Management CICD  
+on:
+  push:
+    branches:
+      - main
+jobs:
+  Build-and-Deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+    - name: Show System Info
+      run: |
+        pwd
+        ls -la
+        hostname
+        whoami
+        docker --version
+    - name: Login To DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{secrets.DOCKER_USERNAME}}
+        password: ${{secrets.DOCKER_PASSWORD}}
+    - name: Build backend image
+      run: |
+        docker build -t ${{secrets.DOCKER_USERNAME}}/emp-backend:v77 ./backend
+    - name: Build frontend image
+      run: |
+        docker build -t ${{secrets.DOCKER_USERNAME}}/emp-frontend:v77 ./frontend
+    - name: push backend image
+      run: |
+        docker push ${{secrets.DOCKER_USERNAME}}/emp-backend:v77             
+    - name: push frontend image
+      run: |
+         docker push ${{secrets.DOCKER_USERNAME}}/emp-frontend:v77   
+    - name: Deploy to Ec2
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{secrets.EC2_HOST}} 
+        username: ${{secrets.EC2_USER}}
+        key: ${{secrets.EC2_SSH_KEY}}
+        script: |
+          if [ ! -d two_tier_app_docker ] ;
+          then
+            git clone https://github.com/FawadAhmad94/two_tier_app_docker.git
+          fi  
+          cd two_tier_app_docker
+          docker compose down
+          docker pull ${{secrets.DOCKER_USERNAME}}/emp-backend:v77      
+          docker pull ${{secrets.DOCKER_USERNAME}}/emp-frontend:v77
+          docker compose up -d
+          docker ps
