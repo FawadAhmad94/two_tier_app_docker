@@ -13,7 +13,8 @@ const employees = [
   { id: 1, name: "Ali", department: "DevOps" },
   { id: 2, name: "Ahmed", department: "Cloud" },
   { id: 3, name: "Sara", department: "Engineering" },
-  { id: 44, name: "JILL", department: "HR" }
+  { id: 4, name: "JILL", department: "HR" },
+  { id: 45, name: "Stanley", department: "Procurement" }
 ];
 
 // Root / API check route
